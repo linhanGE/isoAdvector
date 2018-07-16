@@ -57,7 +57,7 @@ Foam::isoCutCell::isoCutCell(const fvMesh& mesh, scalarField& f)
     cellI_(-1),
     f_(f),
     isoValue_(0),
-    isoCutFace_(isoCutFace(mesh_,f_)),
+    isoCutFace_(isoCutFace(mesh_, f_)),
     isoCutFaces_(10),
     isoCutFacePoints_(10),
     isoCutFaceCentres_(10),
@@ -320,6 +320,7 @@ void Foam::isoCutCell::calcIsoFacePointsFromEdges()
     {
         if
         (
+            // Note: Hardcoded tolerance
             mag
             (
                 unsortedIsoFacePointAngles[order[pi]]
@@ -341,7 +342,7 @@ Foam::label Foam::isoCutCell::calcSubCell
     const scalar isoValue
 )
 {
-    // Populate isoCutFaces_, isoCutFacePoints_, fullySubFaces_, isoFaceCentres_
+    // Populate isoCutFaces_, isoCutFacePoints_, fullySubFaces_, isoFaceCentre_
     // and isoFaceArea_.
 
     clearStorage();
@@ -515,7 +516,7 @@ Foam::label Foam::isoCutCell::vofCutCell
         << "vofCutCell for cell " << celli << " with alpha1 = "
         << alpha1 << " ------" << endl;
 
-    // Finding cell vertex extrema values
+    // Finding cell vertex extremum values
     const labelList& pLabels = mesh_.cellPoints(celli);
     scalarField fvert(pLabels.size());
     forAll(pLabels, pi)
@@ -588,15 +589,17 @@ Foam::label Foam::isoCutCell::vofCutCell
     calcSubCell(celli, f3);
     a3 = volumeOfFluid();
 
-    scalar f4 = f1 + 2*(f2 - f1)/3;
+    scalar f4 = f1 + (f2 - f1)*scalar(2)/scalar(3);
     calcSubCell(celli, f4);
     scalar a4 = volumeOfFluid();
 
     // Building and solving Vandermonde matrix equation
     scalarField a(4), f(4), C(4);
     {
-        a[0] = a1, a[1] = a3, a[2] = a4, a[3] = a2;
-        f[0] = 0, f[1] = (f3-f1)/(f2-f1), f[2] = (f4-f1)/(f2-f1), f[3] = 1;
+        a[0] = a1, f[0] = 0;
+        a[1] = a3, f[1] = (f3 - f1)/(f2 - f1);
+        a[2] = a4, f[2] = (f4 - f1)/(f2 - f1);
+        a[3] = a2, f[3] = 1;
         scalarSquareMatrix M(4);
         forAll(f, i)
         {
@@ -612,7 +615,6 @@ Foam::label Foam::isoCutCell::vofCutCell
     }
 
     // Finding root with Newton method
-
     f3 = f[1]; a3 = a[1];
     label nIter = 0;
     scalar res = mag(a3 - alpha1);
@@ -653,7 +655,7 @@ Foam::label Foam::isoCutCell::vofCutCell
 
     // If tolerance not met use the secant method  with f3 as a hopefully very
     // good initial guess to crank res the last piece down below tol
-
+    // Note: This is expensive because subcell is recalculated every iteration
     scalar x2 = f3;
     scalar g2 = VOF - alpha1;
     scalar x1 = max(1e-3*(f2 - f1), 100*SMALL);

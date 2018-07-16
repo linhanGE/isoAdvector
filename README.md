@@ -98,8 +98,9 @@ work with newer versions. It does not contain the latest code developments.
     - `isoAdvection`
   These are compiled into a library named `libIsoAdvection`. 
 * For comparison we also include the CICSAM, HRIC and mHRIC algebraic VOF 
-  schemes in `finiteVolume` directory. These are compiled into a library called
-  `libVOFInterpolationSchemes`.
+  schemes in `finiteVolume` directory. These were previously compiled into a 
+  library called `libVOFInterpolationSchemes` but are currently not compiled
+  and are only included as legacy code.
 
 `applications/` 
 
@@ -109,11 +110,10 @@ work with newer versions. It does not contain the latest code developments.
       controlDict to interFlow and add the following to the dicitonary
       fvSolution.solvers."alpha.water.*":
 
+      ```
       "alpha.water.*"
       {
-          //interfaceMethod can be set to "MULES" (default), "isoAdvector" or 
-          //"fvSchemes". Use the latter option to use the HRIC, CICSAM or 
-          //vofCompression schemes.
+          //interfaceMethod can be set to "MULES" (default), or "isoAdvector".
 
           interfaceMethod "isoAdvector";
           
@@ -163,11 +163,13 @@ work with newer versions. It does not contain the latest code developments.
 
           gradAlphaNormal false;
       }
+      ```
 
       To use the functionality of a prescribed flow you can set 
       momentumCorrector to no and nCorrectors to -1 in the fvSolution.PIMPLE 
       directory and add the following to the dicitonary fvSolution.solvers.U:
 
+      ```
       U
       {
           //If prescribedU and PIMPLE.nCorrectors is set to -1, then the velocty
@@ -187,6 +189,7 @@ work with newer versions. It does not contain the latest code developments.
 
           reverseTime 0;
       }
+      ```
 
           
       Please see cases in OpenFOAM/run for examples of usage. Note that the 
@@ -238,11 +241,12 @@ work with newer versions. It does not contain the latest code developments.
 
 ## Contributors:
 
-* Johan Roenby <johan@stromning.com> (Inventor and main developer)
-* Hrvoje Jasak (General coding guidance, consistent treatment of boundary faces 
-  including processor boundaries, parallelisation, code clean up, provided 
-  algebraic schemes, CICSAM, HRIC etc.)
-* Henrik Bredmose (Participated in conceptual development)
-* Vuko Vukcevic (Code review, profiling, porting to foam-extend, bug fixing, 
-  testing)
-* Andrew Heather (Code clean up, porting to OpenFOAM+)
+* Johan Roenby, STROMNING, <johan@stromning.com> (Inventor and main developer)
+* Hrvoje Jasak, University of Zagreb (General coding guidance, consistent treatment 
+  of boundary faces including processor boundaries, parallelisation, code clean up, 
+  provided algebraic schemes, CICSAM, HRIC etc.)
+* Henrik Bredmose, DTU Wind Energy (Participated in conceptual development)
+* Vuko Vukcevic, University of Zagreb (Code review, profiling, porting to 
+  foam-extend, bug fixing, testing)
+* Andrew Heather, OpenCFD (Code clean up, porting to OpenFOAM+)
+* Henning Scheufler, DLR (Extensive validation, gmsh based mesh generation)
